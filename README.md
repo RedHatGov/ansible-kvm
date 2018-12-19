@@ -19,7 +19,7 @@ Role Variables
 | `kvm_hostname_full` | :heavy_check_mark:      | kvm.example.com | The FQDN for the RHEL+KVM system |
 | `kvm_disks` | :x:      | ```  root: sda``` | A dictionary of disks to utilize for the installation |
 | `kvm_packages` | :x:      | see defaults/main.yml | List of packages to install |
-| `kvm_repos` | :heavy_check_mark:      |  | A list of Red Hat repositories to enable |
+| `kvm_repos` | :x:      |  | A list of Red Hat repositories to enable |
 
 Dependencies
 ------------
@@ -33,6 +33,8 @@ Example Playbook
 - hosts: kvm
   tasks:
   - name: Deploy kvm
+    vars:
+      kvm_hostname_full: kvm.example.com
     roles:
       - reghatgov.kvm
 ```
