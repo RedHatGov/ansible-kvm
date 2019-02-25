@@ -1,2 +1,7 @@
 ---
 # handlers file for roles/kvm
+
+- name: reload ssh
+  service:
+    name: sshd
+    state: reloaded

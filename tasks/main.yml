@@ -7,16 +7,10 @@
     line: "UseDNS no"
     insertafter: EOF
     state: present
-  register: ssh_config
+  notify: reload ssh
 
 #TODO: examine current dns dns server on the kvm host
 #      keep that value, check it's validity. Set it to something useful
-
-- name: reload ssh
-  service:
-    name: sshd
-    state: reloaded
-  when: ssh_config.changed
 
 - name: enable SELinux
   selinux:
@@ -32,10 +26,6 @@
      - { line: "Defaults !requiretty", state: present }
      - { line: "Defaults requiretty", state: absent }
 
-- name: check sudoers
-  shell: cat /etc/sudoers | grep tty
-  register: sudoers_output
-
 - name: set hostname
   hostname:
     name: "{{ kvm_hostname_full }}"
@@ -43,10 +33,8 @@
 - name: check if virtualization extensions exist
   command: grep -E 'svm|vmx' /proc/cpuinfo
   register: virt_check
+  changed_when: false
   failed_when: false
-
-- name: clean yum cache
-  command: yum clean all
 
 - name: update packages
   yum:
@@ -60,6 +48,7 @@
   shell: if [ $(uname -r) == $(rpm -q kernel | tail -n 1 | sed -e 's/kernel-//g') ] ; then echo no ; else echo reboot; fi
   ignore_errors: true
   register: reboot_hint
+  changed_when: false
 
 - name: install several useful utility and kvm packages
   yum:
@@ -172,9 +161,10 @@
     dest: "/var/lib/libvirt/images/rhel-guest-image-7.qcow2"
     remote_src: true
 
-#TODO: Need to correct this to expect vms to have cloud-init drive
 - name: remove cloud-init and set root password on base rhel 7 guest image
   command: "virt-customize -a /var/lib/libvirt/images/rhel-guest-image-7.qcow2 --root-password password:redhat --uninstall cloud-init"
+  register: rhel7_virt_customize
+  changed_when: '"Finishing off" not in rhel7_virt_customize.stdout'
 
 - name: copy over ansible.cfg
   copy:
@@ -201,3 +191,5 @@
     state: enabled
     immediate: yes
   when: disconnected is defined
+
+- meta: flush_handlers
