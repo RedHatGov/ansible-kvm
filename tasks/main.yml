@@ -40,9 +40,12 @@
   yum:
     name: '*'
     state: latest
-  register: yum_result
+  register: yum_result_update
   async: 1000
   poll: 30
+  until: yum_result_update is success
+  retries: 4
+  delay: 5
 
 - name: check Kernel is the Latest
   shell: |
@@ -59,6 +62,10 @@
   yum:
     name: "{{ kvm_packages }}"
     state: latest
+  register: yum_result_install
+  until: yum_result_install is success
+  retries: 4
+  delay: 5
 
 - name: copying kvm.conf file
   copy:
