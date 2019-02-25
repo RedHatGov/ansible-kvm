@@ -38,9 +38,8 @@
 
 - name: get extra repo files to delete
   find:
-    paths: /etc/yum.repos.d/
-    patterns: "^rhel-7*.repo"
-    use_regex: true
+    paths: /etc/yum.repos.d
+    patterns: "rhel-7*.repo"
   register: wildcard_files_to_delete
 
 - name: delete extra repo files
