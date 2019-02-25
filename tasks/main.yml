@@ -36,6 +36,24 @@
   changed_when: false
   failed_when: false
 
+- name: get extra repo files to delete
+  find:
+    paths: /etc/yum.repos.d/
+    patterns: "^rhel-7*.repo"
+    use_regex: true
+  register: wildcard_files_to_delete
+
+- name: delete extra repo files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ wildcard_files_to_delete.files }}"
+
+- name: yum clean all
+  command: yum clean all
+  register: yum_clean_result
+  changed_when: '"Cleaning repos" in yum_clean_result.stdout'
+
 - name: update packages
   yum:
     name: '*'
@@ -178,7 +196,7 @@
     virt-customize -a /var/lib/libvirt/images/rhel-guest-image-7.qcow2
     --root-password password:redhat --uninstall cloud-init
   register: rhel7_virt_customize
-  changed_when: '"Finishing off" not in rhel7_virt_customize.stdout'
+  changed_when: '"Finishing off" in rhel7_virt_customize.stdout'
 
 - name: copy over ansible.cfg
   copy:
