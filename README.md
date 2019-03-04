@@ -36,7 +36,7 @@ Example Playbook
     vars:
       kvm_hostname_full: kvm.example.com
     roles:
-      - reghatgov.kvm
+      - RegHatGov.kvm
 ```
 
 License
